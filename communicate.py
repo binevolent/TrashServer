@@ -1,30 +1,55 @@
 from flask import Flask, request, jsonify
 import MySQLdb
 from serveraccess import value
+import json
+from decimal import Decimal
+import constants
+
+USER_KEYS = ['id', 'username', 'age', 'address', 'points']
+BIN_KEYS = ['id', 'lat', 'lon', 'name', 'description', 'max_weight', 'current_weight']
+PROMOTION_KEYS = ['id', 'multiplier', 'date_start', 'date_end', 'bin_id']
+
 
 app = Flask(__name__)
 
 db = MySQLdb.connect("localhost", "root", value(), "trash")
 
 #users
-@app.route("/users/<id>", methods=['GET','POST'])
+@app.route("/user/<id>", methods=['GET','POST'])
 def user(id):
-    if request.method=='POST':
+    if request.method == 'POST':
         pass
     else:
         try:
             cursor = db.cursor()
-            print("Hello")
             cursor.execute("SELECT * FROM USERS WHERE ID = %s" % str(id))
-            print(" there!")
             result = cursor.fetchall()
             print(result)
-            return jsonify(result)
+
+            all_users = []
+
+            for user in result:
+                tmpUser = {
+                    "name": user[0],
+                    "username": user[1],
+                    "age": user[2],
+                    "address": user[3],
+                    "points": user[4]
+                }
+
+                all_users.append(tmpUser)
+
+            #print(result)
+            #json = jsonify(result)
+            #print(result[0])
+            return jsonify(all_users)
         except:
             print("Error: unable to fetch data")
 
-@app.route("/users/get_all_users", methods=['GET', 'POST'])
-def get_all_users():
+    return "failed"
+
+@app.route("/users", methods=['GET', 'POST'])
+def users():
     if request.method == 'POST':
         pass
     else:
@@ -37,8 +62,8 @@ def get_all_users():
             print("Error: unable to fetch data")
 
 #bins
-@app.route("/bins/<bin_id>", methods=['GET', 'POST'])
-def bins(bin_id):
+@app.route("/bin/<bin_id>", methods=['GET', 'POST'])
+def bin(bin_id):
     if request.method == 'POST':
         pass
     else:
@@ -50,8 +75,8 @@ def bins(bin_id):
         except:
             print("Error: unable to fetch data")
 
-@app.route("/bins/get_all_bins", methods=['GET', 'POST'])
-def get_all_bins():
+@app.route("/bins", methods=['GET', 'POST'])
+def bins():
     if request.method == 'POST':
         pass
     else:
@@ -64,8 +89,8 @@ def get_all_bins():
             print("Error: unable to fetch data")
 
 #lures
-@app.route("/promotions/<promotions_id>", methods=['GET', 'POST'])
-def promotions(promotions_id):
+@app.route("/promotion/<promotions_id>", methods=['GET', 'POST'])
+def promotion(promotions_id):
     if request.method == 'POST':
         pass
     else:
@@ -77,8 +102,8 @@ def promotions(promotions_id):
         except:
             print("Error: unable to fetch data")
 
-@app.route("/promotions/get_all_promotions", methods=['GET', 'POST'])
-def get_all_promotions():
+@app.route("/promotions", methods=['GET', 'POST'])
+def promotions():
     if request.method == 'POST':
         pass
     else:
@@ -87,6 +112,37 @@ def get_all_promotions():
             cursor.execute("SELECT * FROM PROMOTIONS")
             result = cursor.fetchall()
             return jsonify(result)
+        except:
+            print("Error: unable to fetch data")
+
+def get_nearest_bin(my_location):
+    if request.method == 'POST':
+        pass
+    else:
+        try:
+            my_lat = location.lat
+            my_lon = location.lon
+            cursor = db.cursor()
+            cursor.execute("SELECT * FROM BINS")
+            result = cursor.fetchall()
+
+            # iterate through and find the bin the shortest distance away
+            index = 0
+            for bin in result:
+                bin_lat = bin.lat
+                bin_lon = bin.lon
+                distance = haversine(my_lon, my_lat, bin_lon, bin_lat)
+                if index == 0:
+                    max_distance = distance
+                    max_distance_index = 0
+                else:
+                    if distance < max_distance:
+                        max_distance = distance
+                        max_distance_index = index
+                index += 1
+
+            return jsonify(result[max_distance_index])
+
         except:
             print("Error: unable to fetch data")
 
