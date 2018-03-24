@@ -5,32 +5,33 @@ from serveraccess import value
 app = Flask(__name__)
 
 db = MySQLdb.connect("localhost", "root", value(), "trash")
-cursor = db.cursor()
 
 #users
-@app.route("/user/<id>", methods=['GET','POST'])
+@app.route("/users/<id>", methods=['GET','POST'])
 def user(id):
-    print("PRINT %s" % str(id))
     if request.method=='POST':
         pass
     else:
         try:
+            cursor = db.cursor()
+            print("Hello")
             cursor.execute("SELECT * FROM USERS WHERE ID = %s" % str(id))
+            print(" there!")
             result = cursor.fetchall()
+            print(result)
             return jsonify(result)
         except:
             print("Error: unable to fetch data")
 
-@app.route("/user/get_all_users", methods=['GET', 'POST'])
+@app.route("/users/get_all_users", methods=['GET', 'POST'])
 def get_all_users():
     if request.method == 'POST':
         pass
     else:
         try:
+            cursor = db.cursor()
             cursor.execute("SELECT * FROM USERS")
             result = cursor.fetchall()
-            print(result)
-            print(result)
             return jsonify(result)
         except:
             print("Error: unable to fetch data")
@@ -38,12 +39,11 @@ def get_all_users():
 #bins
 @app.route("/bins/<bin_id>", methods=['GET', 'POST'])
 def bins(bin_id):
-    print(bin_id)
-
     if request.method == 'POST':
         pass
     else:
         try:
+            cursor = db.cursor()
             cursor.execute("SELECT * FROM BINS WHERE ID = %s" % str(bin_id))
             result = cursor.fetchall()
             return jsonify(result)
@@ -56,6 +56,7 @@ def get_all_bins():
         pass
     else:
         try:
+            cursor = db.cursor()
             cursor.execute("SELECT * FROM BINS")
             result = cursor.fetchall()
             return jsonify(result)
@@ -69,6 +70,7 @@ def promotions(promotions_id):
         pass
     else:
         try:
+            cursor = db.cursor()
             cursor.execute("SELECT * FROM PROMOTIONS WHERE ID = %s" % str(promotions_id))
             result = cursor.fetchall()
             return jsonify(result)
@@ -81,8 +83,27 @@ def get_all_promotions():
         pass
     else:
         try:
+            cursor = db.cursor()
             cursor.execute("SELECT * FROM PROMOTIONS")
             result = cursor.fetchall()
             return jsonify(result)
         except:
             print("Error: unable to fetch data")
+
+# Taken from user Michael Dunn in his Stack Overflow response at this address:
+# https://stackoverflow.com/questions/4913349/haversine-formula-in-python-bearing-and-distance-between-two-gps-points
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    r = 6371 # Radius of earth in kilometers. Use 3956 for miles
+    return c * r
