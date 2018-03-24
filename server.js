@@ -118,6 +118,7 @@ app.post('/nearest_bin', function(req, res) {
       console.log("Hello!");
       var min_distance_index;
       var min_distance;
+      console.log("Results.length = " + results.length);
       for(i=0; i < results.length; i++) {
         console.log(i);
         var end = {
@@ -136,7 +137,7 @@ app.post('/nearest_bin', function(req, res) {
           }
         }
       }
-      res.send(results[0]);
+      res.send(results[min_distance_index]);
     }
   });
 });
